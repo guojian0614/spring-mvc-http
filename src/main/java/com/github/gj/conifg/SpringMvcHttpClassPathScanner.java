@@ -1,31 +1,33 @@
 package com.github.gj.conifg;
 
+import com.github.gj.UserService;
 import com.github.gj.annotation.SpringMvcHttpClient;
 import com.github.gj.proxy.SpringMvcHttpProxyFactory;
-import org.springframework.asm.ClassReader;
+import org.springframework.beans.factory.annotation.AnnotatedBeanDefinition;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.config.BeanDefinitionHolder;
-import org.springframework.beans.factory.support.BeanDefinitionBuilder;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
 import org.springframework.core.env.Environment;
+<<<<<<< HEAD
+import org.springframework.core.type.classreading.MetadataReader;
+import org.springframework.core.type.classreading.MetadataReaderFactory;
+import java.util.Arrays;
+import java.util.Iterator;
+=======
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.core.io.support.ResourcePatternResolver;
-import org.springframework.util.StringUtils;
-
 import java.io.IOException;
 import java.util.LinkedHashSet;
+>>>>>>> bde3cf5... 修改
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
 
 
 public class SpringMvcHttpClassPathScanner extends ClassPathBeanDefinitionScanner {
-
-    private ResourcePatternResolver resourcePatternResolver = new PathMatchingResourcePatternResolver();
 
     private final BeanDefinitionRegistry registry;
 
@@ -37,74 +39,55 @@ public class SpringMvcHttpClassPathScanner extends ClassPathBeanDefinitionScanne
         this.environment = environment;
     }
 
+    public void registerFilters() {
+        this.resetFilters(false);
+        this.addIncludeFilter((MetadataReader metadataReader,MetadataReaderFactory metadataReaderFactory )-> ! metadataReader.getClassMetadata().isAnnotation() && metadataReader.getAnnotationMetadata().hasAnnotation(SpringMvcHttpClient.class.getName()));
+        this.addExcludeFilter((MetadataReader metadataReader, MetadataReaderFactory metadataReaderFactory) -> metadataReader.getClassMetadata().getClassName().endsWith("package-info"));
+    }
+
     @Override
     protected Set<BeanDefinitionHolder> doScan(String... basePackages) {
-        return super.doScan(basePackages);
+        Set<BeanDefinitionHolder> beanDefinitions = super.doScan(basePackages);
+        if (beanDefinitions.isEmpty()) {
+            this.logger.warn("No SpringMvcHttpClient was found in '" + Arrays.toString(basePackages) + "' package. Please check your configuration.");
+        } else {
+            this.processBeanDefinitions(beanDefinitions);
+        }
+        return beanDefinitions;
+    }
+
+    private void processBeanDefinitions(Set<BeanDefinitionHolder> beanDefinitions) {
+        Iterator var3 = beanDefinitions.iterator();
+        while(var3.hasNext()) {
+            BeanDefinitionHolder holder = (BeanDefinitionHolder) var3.next();
+            GenericBeanDefinition definition = (GenericBeanDefinition) holder.getBeanDefinition();
+            if (this.logger.isDebugEnabled()) {
+                this.logger.debug("Creating SpringMvcHttpClient with name '" + holder.getBeanName() + "' and '" + definition.getBeanClassName() + "' mapperInterface");
+            }
+            definition.getConstructorArgumentValues().addGenericArgumentValue(definition.getBeanClassName());
+            definition.setBeanClass(SpringMvcHttpProxyFactory.class);
+            definition.setAutowireMode(GenericBeanDefinition.AUTOWIRE_BY_TYPE);
+        }
     }
 
     @Override
-    public Set<BeanDefinition> findCandidateComponents(String basePackage) {
-        Set<BeanDefinition> set = null;
-        try {
-            set = scanCandidateComponents(basePackage);
-        } catch (ClassNotFoundException e) {
-            logger.error(e);
-        } catch (IOException e) {
-            logger.error(e);
-        }
-        return set;
+    protected boolean isCandidateComponent(AnnotatedBeanDefinition beanDefinition) {
+        return beanDefinition.getMetadata().isInterface() && beanDefinition.getMetadata().isIndependent();
     }
 
-    private Set<BeanDefinition> scanCandidateComponents(String basePackage) throws ClassNotFoundException, IOException {
-        LinkedHashSet candidates = new LinkedHashSet();
-        String packageSearchPath = "classpath*:" + super.resolveBasePackage(basePackage) + '/' + "**/*.class";
-        Resource[] resources = this.resourcePatternResolver.getResources(packageSearchPath);
-        Resource[] var7 = resources;
-        int var8 = resources.length;
-        Resource resource;
-        for (int var9 = 0; var9 < var8; ++var9) {
-            resource = var7[var9];
-            register(resource,candidates);
+    @Override
+    protected boolean checkCandidate(String beanName, BeanDefinition beanDefinition) {
+        if (super.checkCandidate(beanName, beanDefinition)) {
+            return true;
+        } else {
+            this.logger.warn("Skipping SpringMvcHttpClient with name '" + beanName + "' and '" + beanDefinition.getBeanClassName() + "' mapperInterface. Bean already defined with the same name!");
+            return false;
         }
-        return candidates;
     }
+<<<<<<< HEAD
 
-    private void register(Resource resource,LinkedHashSet candidates) throws ClassNotFoundException, IOException {
-        if (!resource.isReadable()) {
-            return;
-        }
-        ClassReader classReader = new ClassReader(resource.getInputStream());
-        String typeName = classReader.getClassName();
-        Class type = Class.forName(typeName.replace("/", "."));
-        String classSimple = type.getSimpleName();
-        if (!type.isInterface()) {
-            return;
-        }
-        if (! type.isAnnotationPresent(SpringMvcHttpClient.class)) {
-            return;
-        }
-        String beanName = beanName(classSimple);
-        // 需要被代理的接口
-        BeanDefinitionBuilder builder = BeanDefinitionBuilder.genericBeanDefinition(type);
-        GenericBeanDefinition definition = (GenericBeanDefinition) builder.getBeanDefinition();
-        definition.getPropertyValues().add("interfaceClass", definition.getBeanClassName());
-        definition.setBeanClass(SpringMvcHttpProxyFactory.class);
-        definition.setAutowireMode(GenericBeanDefinition.AUTOWIRE_CONSTRUCTOR);
-        registry.registerBeanDefinition(beanName, definition);
-    }
 
-    private String beanName(String str){
-        char[] chars = str.toCharArray();
-        StringBuilder builder = new StringBuilder(chars.length);
-        for (int i = 0 , length = chars.length; i < length; i++) {
-            if (i == 0){
-                builder.append(Character.toLowerCase(chars[i]));
-                continue;
-            }
-            builder.append(chars[i]);
-        }
-        return builder.toString();
-    }
-
+=======
+>>>>>>> bde3cf5... 修改
 }
 

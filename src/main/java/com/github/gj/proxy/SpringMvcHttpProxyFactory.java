@@ -9,9 +9,19 @@ public class SpringMvcHttpProxyFactory<T> implements FactoryBean<T> {
     @Setter
     private Class<T> interfaceClass;
 
+    private static final SpringMvcHttpProxy SPRING_MVC_HTTP_PROXY = new SpringMvcHttpProxy();
+
+    public SpringMvcHttpProxyFactory(Class<T> interfaceClass) {
+        this.interfaceClass = interfaceClass;
+    }
+
     @Override
     public T getObject() throws Exception {
-        return new SpringMvcHttpProxy().getProxy(interfaceClass);
+<<<<<<< HEAD
+        return SPRING_MVC_HTTP_PROXY.getProxy(interfaceClass);
+=======
+        return new SpringMvcHttpProxyInterceptor().getProxy(interfaceClass);
+>>>>>>> bde3cf5... 修改
     }
 
     @Override

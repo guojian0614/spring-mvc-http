@@ -53,6 +53,34 @@
             <version>4.5.6</version>
             <optional>true</optional>
         </dependency>
+<<<<<<< HEAD
+=======
+        <!-- https://mvnrepository.com/artifact/org.apache.commons/commons-lang3 -->
+>>>>>>> bde3cf5... 修改
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.8.1</version>
+            <optional>true</optional>
+<<<<<<< HEAD
+            <!--<scope>provided</scope>-->
+        </dependency>
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.6</version>
+            <optional>true</optional>
+            <!--<scope>provided</scope>-->
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/commons-io/commons-io -->
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.6</version>
+            <optional>true</optional>
+=======
+>>>>>>> bde3cf5... 修改
+        </dependency>
     </dependencies>
     <dependencyManagement>
         <dependencies>
