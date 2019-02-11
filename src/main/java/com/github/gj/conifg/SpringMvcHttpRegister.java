@@ -35,24 +35,8 @@ public class SpringMvcHttpRegister implements ImportBeanDefinitionRegistrar ,Env
             basePackage = p.getName();
         }
         SpringMvcHttpClassPathScanner scanner = new SpringMvcHttpClassPathScanner(beanDefinitionRegistry,environment);
+        scanner.registerFilters();
         scanner.doScan("com.github");
     }
-
-    public static void main(String[] args) {
-        Method[] methods = A.class.getMethods();
-        for (Method method : methods) {
-            System.out.println(method.getName());
-        }
-    }
-    static class A{
-
-        public void get(){
-
-        }
-
-        private void set(){
-
-        }
-    }
-
+    
 }
