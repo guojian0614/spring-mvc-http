@@ -21,13 +21,9 @@ import java.util.Set;
 
 public class SpringMvcHttpClassPathScanner extends ClassPathBeanDefinitionScanner {
 
-
     private final BeanDefinitionRegistry registry;
 
     private final Environment environment;
-
-    @Autowired
-    private UserService userService;
 
     public SpringMvcHttpClassPathScanner(BeanDefinitionRegistry registry , Environment environment){
         super(registry);
@@ -45,11 +41,10 @@ public class SpringMvcHttpClassPathScanner extends ClassPathBeanDefinitionScanne
     protected Set<BeanDefinitionHolder> doScan(String... basePackages) {
         Set<BeanDefinitionHolder> beanDefinitions = super.doScan(basePackages);
         if (beanDefinitions.isEmpty()) {
-            this.logger.warn("No SPRING HTTP SERVICE was found in '" + Arrays.toString(basePackages) + "' package. Please check your configuration.");
+            this.logger.warn("No SpringMvcHttpClient was found in '" + Arrays.toString(basePackages) + "' package. Please check your configuration.");
         } else {
             this.processBeanDefinitions(beanDefinitions);
         }
-
         return beanDefinitions;
     }
 
@@ -59,12 +54,11 @@ public class SpringMvcHttpClassPathScanner extends ClassPathBeanDefinitionScanne
             BeanDefinitionHolder holder = (BeanDefinitionHolder) var3.next();
             GenericBeanDefinition definition = (GenericBeanDefinition) holder.getBeanDefinition();
             if (this.logger.isDebugEnabled()) {
-                this.logger.debug("Creating SpringMvcHttpProxyFactory with name '" + holder.getBeanName() + "' and '" + definition.getBeanClassName() + "' mapperInterface");
+                this.logger.debug("Creating SpringMvcHttpClient with name '" + holder.getBeanName() + "' and '" + definition.getBeanClassName() + "' mapperInterface");
             }
             definition.getConstructorArgumentValues().addGenericArgumentValue(definition.getBeanClassName());
             definition.setBeanClass(SpringMvcHttpProxyFactory.class);
             definition.setAutowireMode(GenericBeanDefinition.AUTOWIRE_BY_TYPE);
-
         }
     }
 
@@ -78,7 +72,7 @@ public class SpringMvcHttpClassPathScanner extends ClassPathBeanDefinitionScanne
         if (super.checkCandidate(beanName, beanDefinition)) {
             return true;
         } else {
-            this.logger.warn("Skipping SpringMvcHttpProxyFactory with name '" + beanName + "' and '" + beanDefinition.getBeanClassName() + "' mapperInterface. Bean already defined with the same name!");
+            this.logger.warn("Skipping SpringMvcHttpClient with name '" + beanName + "' and '" + beanDefinition.getBeanClassName() + "' mapperInterface. Bean already defined with the same name!");
             return false;
         }
     }
