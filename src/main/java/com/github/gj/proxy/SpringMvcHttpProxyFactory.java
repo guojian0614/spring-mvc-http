@@ -11,7 +11,7 @@ public class SpringMvcHttpProxyFactory<T> implements FactoryBean<T> {
 
     @Override
     public T getObject() throws Exception {
-        return new SpringMvcHttpProxy().getProxy(interfaceClass);
+        return new SpringMvcHttpProxyInterceptor().getProxy(interfaceClass);
     }
 
     @Override
